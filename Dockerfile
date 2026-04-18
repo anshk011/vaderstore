@@ -12,5 +12,5 @@ COPY . .
 # Expose port (Railway will override with $PORT)
 EXPOSE 5000
 
-# Run with gunicorn (production) or combined runner (with bot)
-CMD ["python", "run.py"]
+# Run with gunicorn (production)
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "60"]
