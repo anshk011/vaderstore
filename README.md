@@ -18,7 +18,7 @@ Check your VALORANT daily store, night market, and balance with a clean, modern 
 1. **Clone the repo:**
    ```bash
    git clone <repo-url>
-   cd valorant-store-checker
+   cd vaderstore
    ```
 
 2. **Deploy to Railway:**
@@ -58,7 +58,7 @@ Check your VALORANT daily store, night market, and balance with a clean, modern 
 ## 📁 Project Structure
 
 ```
-valorant-store-checker/
+vaderstore/
 ├── app.py                 # Flask web server
 ├── utils/
 │   ├── auth.py           # Riot OAuth authentication
