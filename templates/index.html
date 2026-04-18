@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valorant Store Checker</title>
+<meta name="description" content="Check your VALORANT daily store, night market, and balance. Secure login with official Riot OAuth.">
+<meta property="og:title" content="Valorant Store Checker">
+<meta property="og:description" content="Check your VALORANT daily store, night market, and balance">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#ff1a1a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><polygon points='18,2 34,10 34,26 18,34 2,26 2,10' fill='none' stroke='%23ff1a1a' stroke-width='1.5'/><circle cx='18' cy='18' r='4' fill='%23ff1a1a'/></svg>">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="/static/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen" class="screen">
+  <div class="login-wrap">
+    <div class="logo-title">VALOR<span>ANT</span></div>
+    <div class="logo-sub">STORE CHECKER</div>
+
+    <div class="qr-box">
+      <div class="qr-label">Login with Riot Account</div>
+      <div class="qr-steps">
+        <div class="qr-step"><span class="step-n">1</span> Click the button below to open Riot login</div>
+        <div class="qr-step"><span class="step-n">2</span> Sign in with your account</div>
+        <div class="qr-step"><span class="step-n">3</span> Copy the redirect URL and paste it below</div>
+      </div>
+      <button class="btn-primary" onclick="openRiotLogin()">
+        🔓 OPEN RIOT LOGIN
+      </button>
+      <div class="qr-status" id="login-status" style="margin-top:12px;display:none">
+        <span class="pulse-dot"></span> <span id="login-status-text">Waiting...</span>
+      </div>
+    </div>
+
+    <div class="manual-box" style="margin-top:16px">
+      <div class="manual-label">After logging in, paste the redirect URL here:</div>
+      <input id="manual-url" type="text" class="input" placeholder="https://playvalorant.com/opt_in#access_token=...">
+      <button class="btn-primary" onclick="submitManualUrl()">Submit</button>
+    </div>
+
+    <div class="privacy-note">
+      🔒 Your credentials never leave Riot's servers.<br>
+      Only the session token is used — no passwords stored.
+    </div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app-screen" class="screen" style="display:none">
+  <header class="app-header">
+    <div class="header-logo">
+      <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+        <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" fill="none" stroke="#ff1a1a" stroke-width="1.5"/>
+        <circle cx="18" cy="18" r="4" fill="#ff1a1a"/>
+      </svg>
+      <span class="header-title">VALOR<span>ANT</span></span>
+    </div>
+    <div class="header-user">
+      <span class="username" id="h-username">Agent</span>
+      <span class="tag" id="h-tag">#0000</span>
+      <span class="region-badge" id="h-region">AP</span>
+    </div>
+  </header>
+
+  <div class="balance-bar">
+    <div class="balance-pill">
+      <span class="b-icon">💠</span>
+      <div><div class="b-val" id="b-vp">—</div><div class="b-lbl">VP</div></div>
+    </div>
+    <div class="balance-pill">
+      <span class="b-icon">✦</span>
+      <div><div class="b-val" id="b-rad">—</div><div class="b-lbl">Radianite</div></div>
+    </div>
+    <div class="balance-pill">
+      <span class="b-icon">👑</span>
+      <div><div class="b-val" id="b-kc">—</div><div class="b-lbl">KC</div></div>
+    </div>
+  </div>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="store" onclick="switchTab('store',this)">🏪 Store</button>
+    <button class="tab-btn" data-tab="nightmarket" onclick="switchTab('nightmarket',this)">🌙 Night Market</button>
+    <button class="tab-btn" data-tab="settings" onclick="switchTab('settings',this)">⚙️ Settings</button>
+  </nav>
+
+  <!-- Store tab -->
+  <section class="tab-content active" id="tab-store">
+    <div class="section-title">Daily Offers <span class="timer" id="store-timer"></span></div>
+    <div class="skin-grid" id="store-grid">
+      {% for _ in range(4) %}
+      <div class="skin-card skeleton">
+        <div class="skin-img-wrap sk"></div>
+        <div class="skin-info">
+          <div class="sk" style="height:14px;width:70%;margin-bottom:6px"></div>
+          <div class="sk" style="height:11px;width:40%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Night Market tab -->
+  <section class="tab-content" id="tab-nightmarket">
+    <div class="section-title">Night Market</div>
+    <div id="nm-grid">
+      <div class="empty-state">
+        <div class="empty-icon">🌙</div>
+        <p>Night Market is not active right now.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Settings tab -->
+  <section class="tab-content" id="tab-settings">
+    <div class="section-title">Settings</div>
+    <label class="field-label">Region</label>
+    <select class="select" id="region-select" onchange="changeRegion(this.value)">
+      <option value="na">NA — North America</option>
+      <option value="eu">EU — Europe</option>
+      <option value="ap">AP — Asia Pacific</option>
+      <option value="kr">KR — Korea</option>
+      <option value="latam">LATAM — Latin America</option>
+      <option value="br">BR — Brazil</option>
+    </select>
+    <button class="btn-danger" onclick="logout()">🚪 Logout</button>
+  </section>
+</div>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>
