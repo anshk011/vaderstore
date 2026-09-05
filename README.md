@@ -17,7 +17,7 @@ Check your VALORANT daily store, night market, and balance with a clean, modern 
 
 1. **Clone the repo:**
    ```bash
-   git clone <repo-url>
+   git clone github.com/anshk011/vaderstore
    cd vaderstore
    ```
 
